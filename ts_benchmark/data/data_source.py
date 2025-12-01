@@ -7,6 +7,7 @@ from typing import Optional, Dict, NoReturn, List
 import pandas as pd
 
 from ts_benchmark.common.constant import FORECASTING_DATASET_PATH
+from ts_benchmark.common.cache import cache,CacheKey
 from ts_benchmark.data.dataset import Dataset
 from ts_benchmark.data.utils import load_series_info, read_data
 
@@ -69,7 +70,7 @@ class LocalDataSource(DataSource):
     """
 
     #: index column name of the metadata
-    _INDEX_COL = "file_name"
+    _INDEX_COL = "date"
 
     def __init__(self, local_data_path: str, metadata_file_name: str):
         """
@@ -161,4 +162,6 @@ class LocalForecastingDataSource(LocalDataSource):
     """
 
     def __init__(self):
-        super().__init__(FORECASTING_DATASET_PATH, "FORECAST_META.csv")
+        dataset_name = cache.get(CacheKey.DATASET_NAME.value)
+        logger.info("dataset name: %s", dataset_name)
+        super().__init__(FORECASTING_DATASET_PATH, dataset_name)

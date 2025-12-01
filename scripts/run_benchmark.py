@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from ts_benchmark.utils.get_file_name import get_unique_file_suffix
 from ts_benchmark.report import report
 from ts_benchmark.common.constant import CONFIG_PATH, THIRD_PARTY_PATH
+from ts_benchmark.common.cache import cache,CacheKey
 from ts_benchmark.pipeline import pipeline
 from ts_benchmark.utils.parallel import ParallelBackend
 
@@ -303,6 +304,11 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    # --------------------------【加入缓存】----------------------------------
+    cache.set(CacheKey.DATASET_NAME.value, args.data_name_list[0])
+    cache.set(CacheKey.DATASET_NAME_LIST.value, args.data_name_list)
+    # ----------------------------------------------------------------------
 
     logging.basicConfig(
         level=logging.INFO,
