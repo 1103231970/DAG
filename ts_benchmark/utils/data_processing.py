@@ -4,6 +4,9 @@
 from collections import OrderedDict
 from typing import List, Optional, Tuple
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_target_channel(
@@ -65,6 +68,13 @@ def split_channel(
     Splits a DataFrame into target and exogenous (exog) parts based on target_channel.
 
     :param df: Input DataFrame to split.
+                              HUFL   HULL   MUFL   MULL   LUFL   LULL         OT
+        date
+        2016-07-01 00:00:00  5.827  2.009  1.599  0.462  4.203  1.340  30.531000
+        2016-07-01 01:00:00  5.693  2.076  1.492  0.426  4.142  1.371  27.787001
+        2016-07-01 02:00:00  5.157  1.741  1.279  0.355  3.777  1.218  27.787001
+        2016-07-01 03:00:00  5.090  1.942  1.279  0.391  3.807  1.279  25.044001
+        2016-07-01 04:00:00  5.358  1.942  1.492  0.462  3.868  1.279  21.948000
     :param target_channel: Rules for selecting target columns. Can include:
 
         - Integers (positive/negative) for single column indices.
@@ -73,6 +83,24 @@ def split_channel(
 
     :return: Tuple of (target_df, exog_df).
              exog_df is None if no exogenous columns exist.
+
+             外生变量（exog_df）:
+                                  HUFL   HULL    MUFL   MULL   LUFL   LULL
+            date
+            2016-07-01 00:00:00  5.827  2.009   1.599  0.462  4.203  1.340
+            2016-07-01 01:00:00  5.693  2.076   1.492  0.426  4.142  1.371
+            2016-07-01 02:00:00  5.157  1.741   1.279  0.355  3.777  1.218
+            2016-07-01 03:00:00  5.090  1.942   1.279  0.391  3.807  1.279
+            2016-07-01 04:00:00  5.358  1.942   1.492  0.462  3.868  1.279
+
+            目标变量（target_df）:
+                                        OT
+            date
+            2016-07-01 00:00:00  30.531000
+            2016-07-01 01:00:00  27.787001
+            2016-07-01 02:00:00  27.787001
+            2016-07-01 03:00:00  25.044001
+            2016-07-01 04:00:00  21.948000
 
     Examples:
         >>> import pandas as pd
@@ -100,6 +128,7 @@ def split_channel(
         >>> print(exog)  # No exog columns
         None
     """
+    logger.info("\n[All Columns Data] :%s\n%s", df.shape,df.head().to_string())
     num_columns = df.shape[1]  # Total number of columns in the DataFrame
 
     # Parse target_channel to get target column indices
@@ -118,6 +147,10 @@ def split_channel(
     exog_df = (
         df.iloc[:, exog_columns] if exog_columns else None
     )  # Directly return None if no exog columns
+
+    # 关键：在占位符前加\n，并用to_string()格式化DataFrame
+    logger.info("\n[Exo Columns Data] :%s \n%s", exog_df.shape,exog_df.head().to_string())
+    logger.info("\n[Target Columns Data] :%s \n%s",target_df.shape,target_df.head().to_string())
     return target_df, exog_df
 
 
