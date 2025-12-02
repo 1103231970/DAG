@@ -1,6 +1,8 @@
 import math
 import torch
 import torch.nn as nn
+import logging
+logger = logging.getLogger(__name__)
 
 # from data_provider.data_factory import data_provider
 
@@ -91,7 +93,7 @@ class KPLayer(nn.Module):
         # solve linear system
         self.K = torch.linalg.lstsq(x, y).solution  # B E E
         if torch.isnan(self.K).any():
-            print("Encounter K with nan, replace K by identity matrix")
+            logger.info("Encounter K with nan, replace K by identity matrix")
             self.K = (
                 torch.eye(self.K.shape[1])
                 .to(self.K.device)
@@ -139,7 +141,7 @@ class KPLayerApprox(nn.Module):
         self.K = torch.linalg.lstsq(x, y).solution  # B E E
 
         if torch.isnan(self.K).any():
-            print("Encounter K with nan, replace K by identity matrix")
+            logger.info("Encounter K with nan, replace K by identity matrix")
             self.K = (
                 torch.eye(self.K.shape[1])
                 .to(self.K.device)
@@ -152,7 +154,7 @@ class KPLayerApprox(nn.Module):
         if pred_len <= input_len:
             self.K_step = torch.linalg.matrix_power(self.K, pred_len)
             if torch.isnan(self.K_step).any():
-                print("Encounter multistep K with nan, replace it by identity matrix")
+                logger.info("Encounter multistep K with nan, replace it by identity matrix")
                 self.K_step = (
                     torch.eye(self.K_step.shape[1])
                     .to(self.K_step.device)
@@ -163,7 +165,7 @@ class KPLayerApprox(nn.Module):
         else:
             self.K_step = torch.linalg.matrix_power(self.K, input_len)
             if torch.isnan(self.K_step).any():
-                print("Encounter multistep K with nan, replace it by identity matrix")
+                logger.info("Encounter multistep K with nan, replace it by identity matrix")
                 self.K_step = (
                     torch.eye(self.K_step.shape[1])
                     .to(self.K_step.device)

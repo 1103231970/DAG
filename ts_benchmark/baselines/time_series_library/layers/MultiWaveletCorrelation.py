@@ -11,6 +11,8 @@ from math import log2, ceil
 import pdb
 from sympy import Poly, legendre, Symbol, chebyshevt
 from scipy.special import eval_legendre
+import logging
+logger = logging.getLogger(__name__)
 
 
 def legendreDer(k, x):
@@ -271,7 +273,7 @@ class MultiWaveletTransform(nn.Module):
         attention_dropout=0.1,
     ):
         super(MultiWaveletTransform, self).__init__()
-        print("base", base)
+        logger.info("base", base)
         self.k = k
         self.c = c
         self.L = L
@@ -327,7 +329,7 @@ class MultiWaveletCross(nn.Module):
         **kwargs
     ):
         super(MultiWaveletCross, self).__init__()
-        print("base", base)
+        logger.info("base", base)
 
         self.c = c
         self.k = k
@@ -437,7 +439,7 @@ class MultiWaveletCross(nn.Module):
 
         # decompose
         for i in range(ns - self.L):
-            # print('q shape',q.shape)
+            # logger.info('q shape',q.shape)
             d, q = self.wavelet_transform(q)
             Ud_q += [tuple([d, q])]
             Us_q += [d]
@@ -504,7 +506,7 @@ class FourierCrossAttentionW(nn.Module):
         mode_select_method="random",
     ):
         super(FourierCrossAttentionW, self).__init__()
-        print("corss fourier correlation used!")
+        logger.info("corss fourier correlation used!")
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.modes1 = modes

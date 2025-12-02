@@ -8,6 +8,9 @@ import numpy as np
 
 from ts_benchmark.evaluation.metrics import METRICS
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def encode_params(params):
     encoded_pairs = []
@@ -97,6 +100,7 @@ class Evaluator:
             except Exception as e:
                 evaluate_result.append(np.nan)
                 log_info += f"Error in calculating {m.__name__}: {traceback.format_exc()}\n{e}\n"
+                logger.error(log_info)
         return evaluate_result, log_info
 
     def default_result(self):

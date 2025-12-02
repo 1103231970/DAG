@@ -439,9 +439,9 @@ class DeepForecastingModelBase(ModelBase):
                 self.CovariateFusion = nn.DataParallel(
                     self.CovariateFusion, device_ids=device_ids
                 )
-        print(
-            "----------------------------------------------------------",
-            self.model_name,
+        logger.info(
+            "————————————————————————————— [%s] —————————————————————————————",
+            self.model_name
         )
         config = self.config
         train_data, valid_data = train_val_split(
@@ -538,7 +538,7 @@ class DeepForecastingModelBase(ModelBase):
             total_params += sum(
                 p.numel() for p in self.CovariateFusion.parameters() if p.requires_grad
             )
-        print(f"Total trainable parameters: {total_params}")
+        logger.info(f"Total trainable parameters: {total_params}")
 
         for epoch in range(config.num_epochs):
             self.model.train()
@@ -576,7 +576,7 @@ class DeepForecastingModelBase(ModelBase):
                 output, target = self._post_process(output, target)
 
                 loss = criterion(output, target)
-                # print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
+                # logger.info("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
 
                 total_loss = loss + additional_loss
 

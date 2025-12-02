@@ -26,6 +26,7 @@ def _safe_execute(fn: Callable, args: Tuple, get_default_result: Callable):
         return fn(*args)
     except Exception as e:
         log = f"{traceback.format_exc()}\n{e}"
+        logger.error(log)
         return get_default_result(**{FieldNames.LOG_INFO: log})
 
 

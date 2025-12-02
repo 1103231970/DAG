@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-
+import logging
+logger = logging.getLogger(__name__)
 plt.switch_backend("agg")
 
 
@@ -21,4 +22,4 @@ def adjust_learning_rate(optimizer, epoch, args):
         lr = lr_adjust[epoch]
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        print("Updating learning rate to {}".format(lr))
+        logger.info("Updating learning rate to {}".format(lr))

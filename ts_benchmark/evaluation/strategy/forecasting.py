@@ -13,6 +13,9 @@ from ts_benchmark.models import ModelFactory
 from ts_benchmark.utils.data_processing import split_time
 from ts_benchmark.utils.random_utils import fix_random_seed, fix_all_random_seed
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class ForecastingStrategy(Strategy, metaclass=abc.ABCMeta):
     """
@@ -53,6 +56,7 @@ class ForecastingStrategy(Strategy, metaclass=abc.ABCMeta):
             )
         except Exception as e:
             log = f"{traceback.format_exc()}\n{e}"
+            logger.error(log)
             single_series_results = self.get_default_result(
                 **{FieldNames.LOG_INFO: log}
             )

@@ -8,6 +8,8 @@ from dash import html, dcc, callback, Output, Input, State, dash_table
 
 from ts_benchmark.report.report_dash.layout import generate_layout, format_data_columns
 from ts_benchmark.report.report_dash.memory import READONLY_MEMORY
+import logging
+logger = logging.getLogger(__name__)
 
 dash.register_page(__name__)
 
@@ -74,6 +76,7 @@ def execute_sql(n_clicks, sql_statement):
             return columns, data, None
         except Exception as e:
             error_message = html.Div(children=[html.H4("Error"), html.P(str(e))])
+            logger.error(error_message)
             return [], [], error_message
     else:
         return [], [], None

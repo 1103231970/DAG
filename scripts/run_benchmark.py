@@ -18,6 +18,7 @@ from ts_benchmark.common.constant import CONFIG_PATH, THIRD_PARTY_PATH
 from ts_benchmark.common.cache import cache,CacheKey
 from ts_benchmark.pipeline import pipeline
 from ts_benchmark.utils.parallel import ParallelBackend
+from datetime import datetime
 
 
 sys.path.insert(0, THIRD_PARTY_PATH)
@@ -305,16 +306,26 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # --------------------------【加入缓存】----------------------------------
+    # --------------------------【加入缓存】--------------------------------
     cache.set(CacheKey.DATASET_NAME.value, args.data_name_list[0])
     cache.set(CacheKey.DATASET_NAME_LIST.value, args.data_name_list)
-    # ----------------------------------------------------------------------
+    # --------------------------------------------------------------------
 
+
+    # ---------------------- 日志模块配置 ----------------------
+    log_filename = datetime.now().strftime("%Y%m%d%H%M%S.log")
+    log_dir = os.path.join(os.getcwd(), 'logs')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    log_file_path = os.path.join(log_dir, log_filename)
     logging.basicConfig(
+        filename=log_file_path,
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s(%(lineno)d): %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    #  -------------------------------------------------------
+
 
     torch.set_num_threads(3)
     with open(os.path.join(CONFIG_PATH, args.config_path), "r") as file:

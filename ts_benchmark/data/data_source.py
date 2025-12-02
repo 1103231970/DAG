@@ -111,6 +111,7 @@ class LocalDataSource(DataSource):
                     load_series_info(os.path.join(self.local_data_path, user_csv))
                 )
             except Exception as e:
+                logger.error(f"Error loading series info from {user_csv}: {e}")
                 raise RuntimeError(f"Error loading series info from {user_csv}: {e}")
         new_metadata = pd.DataFrame(data_info_list)
         new_metadata.set_index(self._INDEX_COL, drop=False, inplace=True)

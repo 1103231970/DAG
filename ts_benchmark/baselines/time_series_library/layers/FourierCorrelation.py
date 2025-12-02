@@ -5,6 +5,8 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import logging
+logger = logging.getLogger(__name__)
 
 
 def get_frequency_modes(seq_len, modes=64, mode_select_method="random"):
@@ -30,7 +32,7 @@ class FourierBlock(nn.Module):
         self, in_channels, out_channels, seq_len, modes=0, mode_select_method="random"
     ):
         super(FourierBlock, self).__init__()
-        print("fourier enhanced block used!")
+        logger.info("fourier enhanced block used!")
         """
         1D Fourier block. It performs representation learning on frequency domain, 
         it does FFT, linear transform, and Inverse FFT.    
@@ -39,7 +41,7 @@ class FourierBlock(nn.Module):
         self.index = get_frequency_modes(
             seq_len, modes=modes, mode_select_method=mode_select_method
         )
-        print("modes={}, index={}".format(modes, self.index))
+        logger.info("modes={}, index={}".format(modes, self.index))
 
         self.scale = 1 / (in_channels * out_channels)
         self.weights1 = nn.Parameter(
@@ -121,7 +123,7 @@ class FourierCrossAttention(nn.Module):
         num_heads=8,
     ):
         super(FourierCrossAttention, self).__init__()
-        print(" fourier enhanced cross attention used!")
+        logger.info(" fourier enhanced cross attention used!")
         """
         1D Fourier Cross Attention layer. It does FFT, linear transform, attention mechanism and Inverse FFT.    
         """
@@ -136,8 +138,8 @@ class FourierCrossAttention(nn.Module):
             seq_len_kv, modes=modes, mode_select_method=mode_select_method
         )
 
-        print("modes_q={}, index_q={}".format(len(self.index_q), self.index_q))
-        print("modes_kv={}, index_kv={}".format(len(self.index_kv), self.index_kv))
+        logger.info("modes_q={}, index_q={}".format(len(self.index_q), self.index_q))
+        logger.info("modes_kv={}, index_kv={}".format(len(self.index_kv), self.index_kv))
 
         self.scale = 1 / (in_channels * out_channels)
         self.weights1 = nn.Parameter(

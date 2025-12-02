@@ -3,6 +3,8 @@ import torch
 import matplotlib.pyplot as plt
 import copy
 
+import logging
+logger = logging.getLogger(__name__)
 plt.switch_backend("agg")
 
 
@@ -35,4 +37,4 @@ def adjust_learning_rate(optimizer, scheduler, epoch, args, printout=True):
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
         if printout:
-            print("Updating learning rate to {}".format(lr))
+            logger.info("Updating learning rate to {}".format(lr))

@@ -14,6 +14,9 @@ from torch import nn
 from ts_benchmark.utils.data_processing import split_time
 from ts_benchmark.baselines.time_series_library.layers.SelfAttention_Family import FullAttention, AttentionLayer
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 def adjust_learning_rate(optimizer, epoch, args):
@@ -32,7 +35,7 @@ def adjust_learning_rate(optimizer, epoch, args):
         lr = lr_adjust[epoch]
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        print("Updating learning rate to {}".format(lr))
+        logger.info("Updating learning rate to {}".format(lr))
 
 
 class EarlyStopping:
@@ -50,19 +53,19 @@ class EarlyStopping:
         if self.best_score is None:
             self.best_score = score
             improved = True
-            print(
+            logger.info(
                 f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
             )
             self.val_loss_min = val_loss
         elif score < self.best_score + self.delta:
             self.counter += 1
-            print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
+            logger.info(f"EarlyStopping counter: {self.counter} out of {self.patience}")
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
             self.best_score = score
             improved = True
-            print(
+            logger.info(
                 f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ..."
             )
             self.val_loss_min = val_loss
