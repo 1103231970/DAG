@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 查找运行中的目标进程ID
-PID=$(ps aux | grep 'DAG' | grep -v grep | awk '{print $2}')
+PID=$(ps aux | grep 'python' | grep -v grep | awk '{print $2}')
 
 if [ -n "$PID" ]; then
     echo "正在终止进程: $PID"
