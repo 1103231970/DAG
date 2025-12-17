@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from typing import List, Dict, Tuple, Any
 
 __all__ = [
     "mae",
@@ -245,3 +246,64 @@ def msmape_norm(
     denom = np.maximum(comparator, np.abs(predicted) + np.abs(actual) + epsilon)
     msmape_per_series = np.mean(2 * np.abs(predicted - actual) / denom) * 100
     return msmape_per_series
+
+
+def corr(pred, true):
+    """
+        单变量使用
+        趋势相关指标运算：越接近1，趋势越一致
+    """
+    u = ((pred - pred.mean()) * (true - true.mean())).sum()  # 全局均值
+    d = np.sqrt(((pred - pred.mean()) ** 2).sum() * ((true - true.mean()) ** 2).sum())
+    return u / (d + 1e-8) if d != 0 else 0
+
+
+# 整合指标名称和值
+def metric_mapping(metric_names, values):
+    metric_values = values[:len(metric_names)]  # 指标数值列表（顺序对应）
+    result_dict = dict(zip(metric_names, metric_values))  # 一一映射为字典
+    return result_dict
+
+
+class Top10Correction:
+    def __init__(self, corr_func=corr):
+        """
+        筛选相关性最高的前10个窗口
+
+        :param corr_func: 相关性计算函数，默认使用timekan的CORR，可替换为pathformer等其他实现
+        """
+        self.top_windows: List[Tuple[float, float, float, float, np.ndarray, np.ndarray]] = []
+        self.max_keep = 10  # 保留相关性最高的10个窗口
+        self.corr_func = corr_func  # 允许外部指定相关性函数（适配不同模型）
+
+    def put_sort(self, target: np.ndarray, predict: np.ndarray, mae: float, mse: float):
+        corr_value = corr(predict, target)
+
+        # 2. 过滤低CORR样本（仅保留趋势一致性高的）
+        if corr_value < 0.6:  # 可根据数据调整阈值
+            return
+
+        # 3. 结合CORR和MSE排序：先按CORR降序，再按MSE升序
+        # 存储为 (-corr, mse, ...)，排序时按第一个元素升序（等价于CORR降序），再按第二个元素升序（MSE升序）
+        self.top_windows.append((-corr_value, mse, mae, corr_value, target.copy(), predict.copy()))
+        # 排序逻辑：优先CORR高（-corr小），再MSE小
+        self.top_windows.sort(key=lambda x: (x[0], x[1]))
+        if len(self.top_windows) > self.max_keep:
+            self.top_windows = self.top_windows[:self.max_keep]
+
+    def get_results(self) -> List[Dict[str, Any]]:
+        """
+        返回Top10高相关度窗口的结果
+
+        :return: 包含每个窗口的相关性、MAE、MSE、真实值、预测值的列表
+        """
+        return [
+            {
+                "mse": item[1],  # MSE值
+                "mae": item[2],  # MAE值
+                "corr": item[3],  # 相关性值（越大越好）
+                "target": item[4],  # 真实值序列
+                "predict": item[5]  # 预测值序列
+            }
+            for item in self.top_windows
+        ]

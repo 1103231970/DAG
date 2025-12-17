@@ -14,6 +14,10 @@ from ts_benchmark.models import ModelFactory
 from ts_benchmark.models.model_base import BatchMaker, ModelBase
 from ts_benchmark.utils.data_processing import split_time
 from ts_benchmark.utils.data_processing import split_channel
+from ts_benchmark.baselines.time_series_library.utils import tools
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class RollingForecastEvalBatchMaker:
@@ -422,7 +426,9 @@ class RollingForecast(ForecastingStrategy):
             raise RuntimeError("Predictions' len don't equal targets' len!")
 
         all_test_results = []
+        top10_corr = regression_metrics.Top10Correction() # 开始获取相关度高的数据
         for predicts, target in zip(all_predicts, targets):
+            # predicts, target shape : [96, 1] "horizon": 96
             single_series_results = self.evaluator.evaluate(
                 target,
                 predicts,
@@ -430,6 +436,23 @@ class RollingForecast(ForecastingStrategy):
                 target_train_valid_data.values,
             )
             all_test_results.append(single_series_results)
+            # -------------------------------------- 获取 效果较好的几种结果 用来绘图 ---------------------------------------
+            result_dict = regression_metrics.metric_mapping(self.accepted_metrics(), single_series_results)
+            top10_corr.put_sort(target=target, predict=predicts,mae=result_dict['mae'], mse=result_dict['mse'])
+            # ----------------------------------------------------------------------------------------------------------
+
+        # 遍历打印每个结果
+        top10_result = top10_corr.get_results()
+        for idx, result in enumerate(top10_result, 1):  # idx从1开始计数
+            true = result['target']
+            pred = result['predict']
+            corr = result['corr']
+            mae = result['mae']
+            mse = result['mse']
+            title = f"CORR: {corr:.6f} - MSE: {mse:.6f} - MAE: {mae:.6f}"
+            tools.visual(true, pred, title,name=f'../DAG/pic/pic{idx}.pdf') # 开始绘图
+            logger.info(f"第 {idx} 优结果，开始绘图 => {title}")
+
         single_series_results = np.mean(np.stack(all_test_results), axis=0).tolist()
 
         average_inference_time = float(total_inference_time) / min(
